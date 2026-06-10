@@ -15,23 +15,28 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>4.0.1</version>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>6.0.0</version>
       <scope>provided</scope>
     </dependency>
-    <!-- Dùng cho JSTL - JAVA STANDARD TAG LIBRARY -->
-<!--    <dependency>-->
-<!--      <groupId>javax.servlet</groupId>-->
-<!--      <artifactId>jstl</artifactId>-->
-<!--      <version>1.2</version>-->
-<!--    </dependency>-->
+    <!-- Dùng cho JSTL - JAVA STANDARD TAG LIBRARY (Jakarta version) -->
+    <dependency>
+      <groupId>org.glassfish.web</groupId>
+      <artifactId>jakarta.servlet.jsp.jstl</artifactId>
+      <version>3.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.servlet.jsp.jstl</groupId>
+      <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+      <version>3.0.0</version>
+    </dependency>
     <!-- Dùng để lập trình với MS SQL Server: JDBC 13.4, Java 11 and up -->
-<!--    <dependency>-->
-<!--      <groupId>com.microsoft.sqlserver</groupId>-->
-<!--      <artifactId>mssql-jdbc</artifactId>-->
-<!--      <version>13.4.0.jre11</version>-->
-<!--    </dependency>-->
+    <dependency>
+      <groupId>com.microsoft.sqlserver</groupId>
+      <artifactId>mssql-jdbc</artifactId>
+      <version>13.4.0.jre11</version>
+    </dependency>
   </dependencies>
   <build>
     <finalName>Java_Web_Template</finalName>
