@@ -2,89 +2,141 @@ package Dao;
 
 import entity.Department;
 import utils.JdbcV1;
+import utils.JdbcV2;
+import utils.JdbcV3;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DepartmentDAO {
 
-    public List<Department> getAll() {
-        List<Department> list = new ArrayList<>();
-        String sql = "{CALL spSelectAll}";
-        try (Connection conn = JdbcV1.getConnection();
-             CallableStatement cs = conn.prepareCall(sql);
-             ResultSet rs = cs.executeQuery()) {
-            while (rs.next()) {
-                list.add(new Department(
-                        rs.getString("Id").trim(),
-                        rs.getString("Name"),
-                        rs.getString("Description")
-                ));
+    //JDBC V1
+    private String stmSELECT = "SELECT [Id], [Name], [Description] FROM [dbo].[Departments]";
+
+    //JDBC V2
+    private String stmSELECT_byId = "SELECT [Id], [Name], [Description] FROM [dbo].[Departments] WHERE [Id] = ?";
+    private String stmSELECT_byName = "SELECT [Id], [Name], [Description] FROM [dbo].[Departments] WHERE [Name] LIKE ?";
+
+    // Câu lệnh SQL phục vụ CRUD
+    private String stmINSERT = "INSERT INTO [dbo].[Departments] ([Id], [Name], [Description]) VALUES (?, ?, ?)";
+    private String stmUPDATE = "UPDATE [dbo].[Departments] SET [Name] = ?, [Description] = ? WHERE [Id] = ?";
+    private String stmDELETE = "DELETE FROM [dbo].[Departments] WHERE [Id] = ?";
+
+    //JDBC V3
+    // Câu lệnh call stored procedure
+    private String callSELECT = "exec spSelectAll";
+    private String callSELECT_byId = "exec spSelectById(?)";
+    private String callINSERT = "exec spInsert(?,?,?)";
+    private String callUPDATE = "exec spUpdate(?,?,?)";
+    private String callDELETE_byId = "exec spDeleteById(?)";
+
+    // Cách viết này chỉ để test nhanh, VI PHẠM QUY ĐỊNH MÔ HÌNH MVC
+    public void checkDepartmentDAO() {
+        try {
+            String sql = stmSELECT;
+            ResultSet resultSet = JdbcV1.executeQuery(sql);
+            while (resultSet.next()) {
+                // Phần lấy dữ liệu (M)
+                String maPhong = resultSet.getString("Id");
+                String tenPhong = resultSet.getString("Name");
+                String motaPhong = resultSet.getString("Description");
+
+                // Phần hiển thị dữ liệu (V), VI PHẠM MÔ HÌNH MVC
+                System.out.println(maPhong);
+                System.out.println(tenPhong);
+                System.out.println(motaPhong);
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public List<Department> findAll() {
+        List<Department> list = new ArrayList<>();
+        try (ResultSet resultSet = JdbcV2.executeQuery(stmSELECT)) {
+            while (resultSet.next()) {
+                Department dept = new Department();
+                dept.setId(resultSet.getString("Id"));
+                dept.setName(resultSet.getString("Name"));
+                dept.setDescription(resultSet.getString("Description"));
+                list.add(dept);
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return list;
     }
 
-    public Department getById(String id) {
-        String sql = "{CALL spSelectById(?)}";
-        try (Connection conn = JdbcV1.getConnection();
-             CallableStatement cs = conn.prepareCall(sql)) {
-            cs.setString(1, id);
-            try (ResultSet rs = cs.executeQuery()) {
-                if (rs.next()) {
-                    return new Department(
-                            rs.getString("Id").trim(),
-                            rs.getString("Name"),
-                            rs.getString("Description")
-                    );
-                }
+    public List<Department> getAll() {
+        return findAll();
+    }
+
+    public Department findById(String id) {
+        Department dept = null;
+        try (java.sql.Connection conn = JdbcV2.getConnection();
+             java.sql.ResultSet resultSet = JdbcV2.query(conn, stmSELECT_byId, id)) {
+            if (resultSet.next()) {
+                dept = new Department();
+                dept.setId(resultSet.getString("Id"));
+                dept.setName(resultSet.getString("Name"));
+                dept.setDescription(resultSet.getString("Description"));
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+        return dept;
     }
 
-    public void insert(Department dept) {
-        String sql = "{CALL spInsert(?, ?, ?)}";
-        try (Connection conn = JdbcV1.getConnection();
-             CallableStatement cs = conn.prepareCall(sql)) {
-            cs.setString(1, dept.getId());
-            cs.setString(2, dept.getName());
-            cs.setString(3, dept.getDescription());
-            cs.executeUpdate();
-        } catch (SQLException e) {
+    public Department getById(String id) {
+        return findById(id);
+    }
+
+    public List<Department> findByName(String name) {
+        List<Department> list = new ArrayList<>();
+        try (java.sql.Connection conn = JdbcV2.getConnection();
+             java.sql.ResultSet resultSet = JdbcV2.query(conn, stmSELECT_byName, '%' + name + '%')) {
+            while (resultSet.next()) {
+                Department dept = new Department();
+                dept.setId(resultSet.getString("Id"));
+                dept.setName(resultSet.getString("Name"));
+                dept.setDescription(resultSet.getString("Description"));
+                list.add(dept);
+            }
+        } catch (Exception e) {
             e.printStackTrace();
+        }
+        return list;
+    }
+
+    // 3. THÊM MỚI - Sử dụng executeUpdate
+    public int insert(Department dept) {
+        try {
+            return JdbcV3.executeUpdate(callINSERT, dept.getId(), dept.getName(), dept.getDescription());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
         }
     }
 
-    public void update(Department dept) {
-        String sql = "{CALL spUpdate(?, ?, ?)}";
-        try (Connection conn = JdbcV1.getConnection();
-             CallableStatement cs = conn.prepareCall(sql)) {
-            cs.setString(1, dept.getId());
-            cs.setString(2, dept.getName());
-            cs.setString(3, dept.getDescription());
-            cs.executeUpdate();
-        } catch (SQLException e) {
+    // 4. CẬP NHẬT - Sử dụng executeUpdate
+    public int update(Department dept) {
+        try {
+            return JdbcV3.executeUpdate(callUPDATE, dept.getId(), dept.getName(), dept.getDescription());
+        } catch (Exception e) {
             e.printStackTrace();
+            return 0;
         }
     }
 
-    public void delete(String id) {
-        String sql = "{CALL spDeleteById(?)}";
-        try (Connection conn = JdbcV1.getConnection();
-             CallableStatement cs = conn.prepareCall(sql)) {
-            cs.setString(1, id);
-            cs.executeUpdate();
-        } catch (SQLException e) {
+    // 5. XÓA - Sử dụng executeUpdate
+    public int delete(String id) {
+        try {
+            return JdbcV3.executeUpdate(callDELETE_byId, id);
+        } catch (Exception e) {
             e.printStackTrace();
+            return 0;
         }
     }
 }

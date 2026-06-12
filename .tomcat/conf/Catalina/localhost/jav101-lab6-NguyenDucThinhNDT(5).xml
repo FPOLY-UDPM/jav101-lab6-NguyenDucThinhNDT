@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Context docBase="C:/jav101-lab6-NguyenDucThinhNDT(5)/src/main/webapp">
+  <Resources cacheMaxSize="10240">
+    <PreResources base="C:/jav101-lab6-NguyenDucThinhNDT(5)/target/classes" className="org.apache.catalina.webresources.DirResourceSet" webAppMount="/WEB-INF/classes"/>
+    <PostResources base="C:/Users/ADMIN/.m2/repository/javax/servlet/jstl/1.2/jstl-1.2.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/jstl-1.2.jar"/>
+    <PostResources base="C:/Users/ADMIN/.m2/repository/com/microsoft/sqlserver/mssql-jdbc/13.4.0.jre11/mssql-jdbc-13.4.0.jre11.jar" className="org.apache.catalina.webresources.FileResourceSet" webAppMount="/WEB-INF/lib/mssql-jdbc-13.4.0.jre11.jar"/>
+  </Resources>
+</Context>
